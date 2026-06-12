@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Vercel 빌드 단계에서 환경변수가 셋업되지 않아 'Invalid URL' 에러가 나는 것을 방어
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co'
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseUrl = rawUrl.startsWith('http') ? rawUrl : 'https://dummy.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy_anon_key'
 
 // 클라이언트 사이드 & 공용(Anon 권한) 접근용
