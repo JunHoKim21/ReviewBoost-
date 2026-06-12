@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [originalText, setOriginalText] = useState('');
   const [summary, setSummary] = useState('너무 예쁘고 핏도 딱 맞아요! 데일리로 입기 너무 좋네요 💖');
   const [subText, setSubText] = useState('@스마트스토어고객님');
-  const [theme, setTheme] = useState<'dark'|'light'|'gradient'>('dark');
+  const [theme, setTheme] = useState<'dark'|'light'|'gradient'|'nature'|'sunset'|'ocean'>('dark');
   
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -139,9 +139,12 @@ export default function Dashboard() {
 
   const getThemeClasses = () => {
     switch(theme) {
-      case 'light': return 'bg-white text-slate-900';
-      case 'gradient': return 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white';
-      case 'dark': default: return 'bg-gradient-to-br from-slate-800 to-slate-950 text-white';
+      case 'light': return 'bg-white text-slate-900 border-slate-200';
+      case 'gradient': return 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white border-none';
+      case 'nature': return 'bg-gradient-to-br from-emerald-100 to-teal-200 text-teal-950 border-teal-300';
+      case 'sunset': return 'bg-gradient-to-br from-orange-400 to-rose-400 text-white border-none';
+      case 'ocean': return 'bg-gradient-to-br from-cyan-600 to-blue-700 text-white border-none';
+      case 'dark': default: return 'bg-gradient-to-br from-slate-800 to-slate-950 text-white border-white/10';
     }
   };
 
@@ -254,6 +257,24 @@ export default function Dashboard() {
                 className={`p-3 rounded-lg border text-xs transition ${theme === 'gradient' ? 'border-violet-500' : 'border-transparent opacity-70 hover:opacity-100'} bg-gradient-to-r from-violet-500 to-fuchsia-500`}
               >
                 비비드 팝
+              </button>
+              <button 
+                onClick={() => setTheme('nature')}
+                className={`p-3 rounded-lg border text-xs transition ${theme === 'nature' ? 'border-violet-500' : 'border-transparent opacity-70 hover:opacity-100'} bg-gradient-to-br from-emerald-100 to-teal-200 text-teal-950`}
+              >
+                네이처 그린
+              </button>
+              <button 
+                onClick={() => setTheme('sunset')}
+                className={`p-3 rounded-lg border text-xs transition ${theme === 'sunset' ? 'border-violet-500' : 'border-transparent opacity-70 hover:opacity-100'} bg-gradient-to-br from-orange-400 to-rose-400 text-white`}
+              >
+                선셋 코랄
+              </button>
+              <button 
+                onClick={() => setTheme('ocean')}
+                className={`p-3 rounded-lg border text-xs transition ${theme === 'ocean' ? 'border-violet-500' : 'border-transparent opacity-70 hover:opacity-100'} bg-gradient-to-br from-cyan-600 to-blue-700 text-white`}
+              >
+                오션 블루
               </button>
             </div>
           </div>
