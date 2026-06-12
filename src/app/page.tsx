@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [credit, setCredit] = useState(5);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState<{msg: string, type: 'error'|'success'} | null>(null);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   // Authentication Check & Fetch Credit
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function Dashboard() {
       if (data) {
         setCredit(data.credit_limit - data.credit_used);
       }
+      setIsAuthChecked(true);
     };
     fetchUser();
   }, [router]);
@@ -48,6 +50,10 @@ export default function Dashboard() {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   };
+
+  if (!isAuthChecked) {
+    return <div className="min-h-screen bg-slate-950 flex justify-center items-center text-white"><div className="animate-pulse">Loading...</div></div>;
+  }
 
   const handleSummarize = async () => {
     if (!originalText.trim()) {
