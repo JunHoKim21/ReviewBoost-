@@ -4,13 +4,15 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import html2canvas from 'html2canvas';
-import { Quote, Download, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Quote, Download, Sparkles, AlertCircle, CheckCircle2, Image as ImageIcon, X } from 'lucide-react';
 
 export default function Dashboard() {
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [originalText, setOriginalText] = useState('');
+  const [imageBase64, setImageBase64] = useState<string|null>(null);
   const [summary, setSummary] = useState('너무 예쁘고 핏도 딱 맞아요! 데일리로 입기 너무 좋네요 💖');
   const [subText, setSubText] = useState('@스마트스토어고객님');
   const [theme, setTheme] = useState<'dark'|'light'|'gradient'|'nature'|'sunset'|'ocean'>('dark');
@@ -55,9 +57,31 @@ export default function Dashboard() {
     return <div className="min-h-screen bg-slate-950 flex justify-center items-center text-white"><div className="animate-pulse">Loading...</div></div>;
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // 4MB 제한 (간단한 클라이언트 측 방어)
+    if (file.size > 4 * 1024 * 1024) {
+      showToast('이미지 크기는 4MB 이하여야 합니다.', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageBase64(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImageBase64(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleSummarize = async () => {
-    if (!originalText.trim()) {
-      showToast('리뷰 원본을 입력해주세요.', 'error');
+    if (!originalText.trim() && !imageBase64) {
+      showToast('리뷰 텍스트를 입력하거나 캡처 이미지를 업로드해주세요.', 'error');
       return;
     }
     
@@ -66,7 +90,7 @@ export default function Dashboard() {
       const response = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ originalText })
+        body: JSON.stringify({ originalText, imageBase64 })
       });
 
       if (!response.ok) throw new Error('요약 실패');
@@ -193,18 +217,50 @@ export default function Dashboard() {
             <textarea 
               value={originalText}
               onChange={e => setOriginalText(e.target.value)}
-              className="w-full h-28 p-3 glass-input rounded-lg resize-none text-sm placeholder-slate-500"
-              placeholder="여기에 고객이 남긴 리뷰 텍스트를 그대로 붙여넣어주세요..."
+              className="w-full h-24 p-3 glass-input rounded-lg resize-none text-sm placeholder-slate-500"
+              placeholder="여기에 리뷰 텍스트를 붙여넣거나, 아래 버튼을 눌러 스크린샷 캡처본을 첨부해주세요..."
             />
+            
+            {/* 이미지 업로드 영역 */}
+            <div className="flex items-center gap-3">
+              <input 
+                type="file" 
+                accept="image/*" 
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+                id="image-upload"
+              />
+              <label 
+                htmlFor="image-upload" 
+                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm cursor-pointer transition"
+              >
+                <ImageIcon size={16} className="text-violet-400" />
+                스크린샷 첨부
+              </label>
+
+              {imageBase64 && (
+                <div className="relative group">
+                  <img src={imageBase64} alt="Preview" className="h-10 w-10 object-cover rounded border border-violet-500/50" />
+                  <button 
+                    onClick={removeImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button 
               onClick={handleSummarize}
-              disabled={isSummarizing}
-              className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold transition flex justify-center items-center gap-2 disabled:opacity-70"
+              disabled={isSummarizing || (!originalText.trim() && !imageBase64)}
+              className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold transition flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
             >
               {isSummarizing ? (
-                <span className="animate-pulse">분석 및 요약 중...</span>
+                <span className="animate-pulse">AI 멀티모달 분석 중...</span>
               ) : (
-                <><Sparkles size={16}/> AI 핵심 카피 요약하기</>
+                <><Sparkles size={16}/> AI 텍스트 및 이미지 분석하기</>
               )}
             </button>
           </div>
